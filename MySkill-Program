@@ -1,0 +1,99 @@
+--Basic--
+/Q1: Tampilkan 50 baris pertama pada tabel olist_orders/
+  SELECT * FROM olist_orders
+    LIMIT 50
+/Q2: Tampilkan kolom order_id, customer_id, order_purchase_timestamp pada tabel olist_orders. Batasi 50 baris pertama/
+  SELECT order_id,customer_id,order_purchase_timestamp FROM olist_orders
+    LIMIT 50
+/Q3: Dari tabel olist_order_items, tampilkan kolom (1)price, (2)price ditambah 100, (3)price ditambah dengan freight_value. Berikan alias pada kolom kedua dan ketiga dengan nama bebas. Batasi 50 baris pertama/
+  SELECT price,(price+100) as hundredPrice,(price+freight_value) as freightPrice
+    LIMIT 50
+/Q4: Tampilkan secara unik semua customer_state dari tabel olist_customers/
+  SELECT DISTINCT customer_state FROM olist_customers
+/Q5: Urutkan tabel olist_orders berdasarkan order_purchase_timestamp terlama sampai terbaru. Kapan pembelian ketiga dilakukan tabel tersebut/
+  SELECT order_purchase_timestamp FROM olist_orders
+    ORDER BY 1
+      LIMIT 3
+
+--Conditional--
+/Q1: Tampilkan 50 baris dari tabel olist_customers dengan customer_state='RJ'/
+  SELECT * FROM olist_customers 
+    WHERE customer_state='RJ'
+      LIMIT 50
+/Q2: Tampilkan 50 baris dari tabel olist_sellers dengan seller_city diantara kota-kota berikut sao paulo, santo andre, rio de janneiro, curitiba. Urutkan berdasarkan seller_city secara alfabetis/
+  SELECT * FROM olist_sellers
+    WHERE seller_city IN ('sao paulo','santo andre','rio de janneiro','curitiba')
+      ORDER BY seller_city
+/Q3: Tampilkan product_id dari tabel olist products dengan product_weight_g tidak melebihi 1000 atau product_length tidak kurang dari 40/
+  SELECT product_id FROM olist_products
+    WHERE product_weight_g <=1000 OR product_length_cm >=40
+/Q4: Tampilkan secara unik order_status dari tabel olist_orders dengan order_approved_at berupa null/
+  SELECT DISTINCT order_status FROM olist_orders
+    WHERE order_approved_at IS NULL
+/Q5: Pada tabel olist_order_payments, buat sebuah kolom yang mengidentifikasi apakah payment_value berada diantara 100 sampai dengan 200/
+  SELECT * FROM olist_order_payments
+    WHERE payment_value NOT BETWEEN 100 AND 200
+/Q6: Tampilkan review_id dan review_comment_message dari tabel olist_order_reviews dengan review_comment_message diawali kata super/
+  SELECT review_id,review_comment_message FROM olist_order_reviews
+    WHERE review_comment_message LIKE 'super%'
+
+--Aggregation--
+/Q1: Hitung banyaknya baris pada tabel olist sellers/
+  SELECT COUNT(*) FROM olist_sellers
+/Q2: Berdasarkan tabel olist_customers, hitung banyaknya kota di masing-masing state. Urutkan secara alfabetis. Petunjuk gunakan fungsi count(distinct customer_city)/
+  SELECT customer_state,COUNT(DISTINCT customer_city) as distinctCity from olist_customers
+    WHERE customer_state IS NOT NULL
+     GROUP BY 1
+       ORDER BY 1
+/Q3: Hitung jumlah payment_value dari tabel olist_order_payments yang menggunakan credit_card serta payment_installments lebih dari 1. Kelompokkan berdasarkan payment_installments dan urutkan payment_installment dari yang terkecil sampai terbesar/
+  SELECT payment_installments,payment_type,SUM(payment_value) as sumPayment FROM olist_order_payments
+    WHERE payment_installments>1
+      GROUP BY 1
+        ORDER BY 1
+ /Q4: Berdasarkan tabel olist_products, berapa rata-rata (product_weight_g) dari produk yang memiliki panjang antara 40cm sampai dengan 80cm (product_length_cm)/
+  SELECT AVG(product_weight_g) FROM olist_product
+    WHERE product_length_cm BETWEEN 40 AND 80
+ /Q5: Pada tabel olist_order_items, tampilkan seller_id dan jumlah price masing-masing apabila jumlah price si penjual tersebut lebih besar dari 2000. Urutkan berdasarkan jumlah price terbesar ke terkecil/
+  SELECT seller_id,SUM(price) as sumPrice FROM olist_order_items
+    GROUP BY 1
+      HAVING sumPrice>2000
+        ORDER BY 2 desc
+ 
+ --Join--
+ /Q1: Tampilkan kolom order_id, customer_unique_id, order_status, dan order_purchase_timestamp dari tabel olist_orders digabung dengan olist_customers dengan key customer_id pada kedua tabel/
+  SELECT order_id,customer_unique_id,order_status,order_purchase_timestamp
+    FROM olist_orders as x INNER JOIN olist_customers as y ON x.customer_id=y.customer_id
+ /Q2: Tampilkan product_category_name dari tabel olist_products dan olist_order_items dengan key product_id. Tampilkan hanya product_category_name yang memiliki harga saja/
+  SELECT product_category_name
+    FROM olist_producrs as x INNER JOIN olist_order_items as y ON x.product_id=y.product_id
+      WHERE product_category_name IS NOT NULL
+ /Q3: Hitung banyak customer yang tercatat dalam olist_customers yang tidak memesan apapun sepanjang tahun 2017/
+  SELECT * FROM
+    (SELECT customer_id,customer_unique_id FROM olist_customers) as t1
+      LEFT JOIN
+    (SELECT customer_id,order_delivered_customer_timestamp LIKE '2017%') as t2
+      ON t1.customer_id=t2.customer_id
+/Q4: Berdasarkan review yang diberikan pada tahun 2018 (review_creation_date), kelompokkan dan hitung banyaknya review_score yang diterima setiap seller_id. Siapa seller yang menerima paling banyak review bintang 5 pada tahun itu?/
+  SELECT seller_id,review_score,COUNT(1) as countScore
+    FROM
+        (SELECT order_id,review_score FROM olist_order_reviews
+         WHERE review_creation_date LIKE '2018%') as t1
+          INNER JOIN
+        (SELECT order_id,seller_id FROM olist_order_items_ as t2
+          ON t1.order_id=t2.order_id
+
+--String Operators and Function--
+/Q1: Tampilkan tabel olist_order_payments tetapi ganti karakter underscore (_) pada pembayaran dengan spasi ( )/
+  SELECT payment_type,REPLACE(payment_type,'_',' ') as replaceType FROM olist_order_payments
+/Q2:Tampilkan pesanan yang diterima customer (order_delivered_customer_timestamp) pada tanggal 1 bulan apapun/
+  SELECT order_id,order_delivered_customer_timestamp,LEFT(order_delivered_customer_timestamp,10) as dateDelivered FROM olist_orders
+    WHERE order_delivered_customer_timestamp LIKE '%-01-%'
+/Q3: Tampilkan seller_zip_code_prefix (tabel olist_sellers) dengan aturan berikut:a. jika terdiri dari 5 digit atau lebih, tampilkan apa adanya;b. jika terdiri dari kurang 5 digit, maka berikan digit 0 di depan hingga menjadi 5 digit/
+  SELECT 
+    seller_zip_code_prefix,
+    CASE WHEN LENGTH(seller_zip_code prefix)>=5 THEN seller_zip_code_prefix ELSE LPAD(COALESCE seller_zip_coder_prefix,0),5,0) END as sellerZip
+      FROM olist_sellers
+/Q4: Berapa banyak review yang diberikan pada tahun 2017 yang memiliki lebih dari 80 karakter pada pesannya?/
+  SELECT review_id,COUNT(1) as countReview FROM olist_order_reviews
+    WHERE LENGTH(review_comment_message)>80 AND review_creation_date LIKE '2017%'
+    GROUP BY 1   
