@@ -1,1 +1,1 @@
-# MySQLL-Quizzes
+# MySQL-Quizzes
